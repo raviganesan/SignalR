@@ -1,24 +1,90 @@
 ﻿<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <h1>Web Order</h1>
 </div>
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
-        a broad range of clients, including browsers and mobile devices. ASP.NET Web API
-        is an ideal platform for building RESTful applications on the .NET Framework.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
-    </div>
+@*<div class="row">
+        <div class="col-md-4">
+            <h2>Getting started</h2>
+            <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
+            a broad range of clients, including browsers and mobile devices. ASP.NET Web API
+            is an ideal platform for building RESTful applications on the .NET Framework.</p>
+            <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>Get more libraries</h2>
+            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
+            <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>Web Hosting</h2>
+            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
+            <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
+        </div>
+    </div>*@
+
+@section scripts{
+    <!--Reference the SignalR library. -->
+
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.3.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.2.3.js"></script>
+    
+    <script>
+        $(function() {
+            //With Proxy
+            //var realTimeHub = $.connection.realTimeHub;
+            //realTimeHub.client.addMessage = function(param) {
+            //    $('message').val(param);
+            //}
+
+            //$.connection.hub.start().done(function() {
+
+            //    $('status').text("connected");
+
+            //});
+
+            //Without Proxy
+            var connection = $.hubConnection();
+            var realTimeProxy = connection.createHubProxy('realTimeHub');
+            realTimeProxy.on('addMessage', function (param) {
+                $('#message').val(param);
+                console.log(param);
+
+                $('#history').prepend('<li>' + htmlEncode(param) + '</li>');
+            });
+
+            connection.start().done(function () {
+
+                console.log('Now connected, connection ID=' + $.connection.hub.id);
+                // Wire up Send button to call NewContosoChatMessage on the server.
+                //$('#newContosoChatMessage').click(function () {
+                //    contosoChatHubProxy.invoke('newContosoChatMessage', $('#displayname').val(), $('#message').val());
+                //    $('#message').val('').focus();
+                //});
+
+                    $('#sendmessage').click(function () {
+                        // Call the Send method on the hub. 
+                        realTimeProxy.invoke('ConfigSettings',$('#message').val());
+                        // Clear text box and reset focus for next comment. 
+                        $('#message').val('').focus();
+                    });
+            })
+            .fail(function (a)
+              {
+                 console.log('Could not connect'+ a );
+             });;
+        });
+
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+
+    </script>
+
+}
+
+<div class="container">
+    <input type="text" id="message" />
+    <input type="button" id="sendmessage" value="Submit" />
+    <ul id="history"></ul>
 </div>
